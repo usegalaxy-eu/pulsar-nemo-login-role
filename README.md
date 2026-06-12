@@ -49,3 +49,9 @@ After deploy, start Pulsar with the wrapper:
 ```bash
 cd ~/pulsar && nohup ./start_pulsar.sh > /dev/null 2>&1 &
 ```
+
+## Status
+
+Known good deployment: Pulsar `0.15.15.dev0` on Python 3.9 (NEMO login node).
+Note that `pulsar_nemo_version: main` may pull a build that requires Python
+3.10+.
