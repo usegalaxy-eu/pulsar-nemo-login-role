@@ -17,7 +17,7 @@ small auto-restart wrapper script rather than a service unit.
 ## Important
 
 - The manager is `queued_cli` with `job_plugin: Slurm`. This is required so
-  jobs are **submitted to Slurm** and run on compute nodes — `queued_python`
+  jobs are **submitted to Slurm** and run on compute nodes, `queued_python`
   would run them on the login node, which is not allowed on shared HPC.
 - Supply the relay URL and credentials via vault / extra-vars. The defaults are
   placeholders.
@@ -49,8 +49,3 @@ After deploy, start Pulsar with the wrapper:
 ```bash
 cd ~/pulsar && nohup ./start_pulsar.sh > /dev/null 2>&1 &
 ```
-
-## Status
-
-Experimental — pin a Pulsar version known to work with the cluster's Python and
-the relay transport.
