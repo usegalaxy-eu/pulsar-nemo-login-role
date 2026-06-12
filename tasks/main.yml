@@ -1,0 +1,33 @@
+---
+- name: Create Pulsar directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ pulsar_nemo_home }}"
+    - "{{ pulsar_nemo_home }}/config"
+
+- name: Install Pulsar into a virtualenv
+  pip:
+    name: "git+https://github.com/galaxyproject/pulsar.git@{{ pulsar_nemo_version }}"
+    virtualenv: "{{ pulsar_nemo_venv }}"
+    virtualenv_command: python3 -m venv
+
+- name: Deploy Pulsar app config
+  template:
+    src: app.yml.j2
+    dest: "{{ pulsar_nemo_home }}/config/app.yml"
+    mode: "0600"
+
+- name: Deploy job metrics config
+  copy:
+    src: job_metrics_conf.xml
+    dest: "{{ pulsar_nemo_home }}/config/job_metrics_conf.xml"
+    mode: "0644"
+
+- name: Deploy start wrapper
+  template:
+    src: start_pulsar.sh.j2
+    dest: "{{ pulsar_nemo_home }}/start_pulsar.sh"
+    mode: "0755"

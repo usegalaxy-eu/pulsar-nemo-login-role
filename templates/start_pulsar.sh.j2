@@ -1,0 +1,12 @@
+#!/bin/bash
+# Auto-restart wrapper: NEMO login nodes have no user-level systemd,
+# so we keep Pulsar alive with a simple loop.
+cd {{ pulsar_nemo_home }}
+source .venv/bin/activate
+
+while true; do
+    echo "$(date): Starting Pulsar..." >> pulsar.log
+    pulsar-main --app_conf_path config/app.yml >> pulsar.log 2>&1
+    echo "$(date): Pulsar exited, restarting in 10s..." >> pulsar.log
+    sleep 10
+done
