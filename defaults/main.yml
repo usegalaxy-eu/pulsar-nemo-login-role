@@ -3,8 +3,20 @@
 pulsar_nemo_home: "{{ ansible_env.HOME }}/pulsar"
 pulsar_nemo_venv: "{{ pulsar_nemo_home }}/.venv"
 
-# Pulsar version (pin a commit/tag known to work with the login node's Python)
-pulsar_nemo_version: "main"
+# Python module to load on NEMO (relay client needs >= 3.10; the venv is built with this)
+pulsar_nemo_python_module: "lang/python/3.11.5-gcccore-13.2.0"
+
+# Pulsar version: pinned master SHA that includes the pulsar-relay-client migration
+# (commit 9ca39bb). Installed as pulsar-app (standalone, full galaxy-* deps), do NOT
+# set PULSAR_GALAXY_LIB, the login node runs Pulsar standalone.
+pulsar_nemo_version: "cc29156f59d3d2259ecc5eac5d5441ca16f080e0"
+
+# Relay client (separate package since the migration; needs >= 0.2.1 for relay 0.2.x)
+pulsar_nemo_relay_client_version: ">=0.2.1"
+
+# Allow plaintext http:// to the relay. The new client refuses non-localhost http://
+# unless this is set. Set to false once the relay is behind https://.
+pulsar_nemo_relay_allow_insecure: true
 
 # Relay connection (override; secrets via vault)
 pulsar_nemo_relay_url: "http://CHANGE_ME:9000/"

@@ -2,7 +2,11 @@
 # Auto-restart wrapper: NEMO login nodes have no user-level systemd,
 # so we keep Pulsar alive with a simple loop.
 cd {{ pulsar_nemo_home }}
+module load {{ pulsar_nemo_python_module }}
 source .venv/bin/activate
+{% if pulsar_nemo_relay_allow_insecure %}
+export PULSAR_RELAY_ALLOW_INSECURE=1
+{% endif %}
 
 while true; do
     echo "$(date): Starting Pulsar..." >> pulsar.log

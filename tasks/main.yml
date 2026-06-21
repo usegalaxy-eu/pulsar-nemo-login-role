@@ -8,11 +8,32 @@
     - "{{ pulsar_nemo_home }}"
     - "{{ pulsar_nemo_home }}/config"
 
-- name: Install Pulsar into a virtualenv
-  pip:
-    name: "git+https://github.com/galaxyproject/pulsar.git@{{ pulsar_nemo_version }}"
-    virtualenv: "{{ pulsar_nemo_venv }}"
-    virtualenv_command: python3 -m venv
+- name: Create the Pulsar venv with the NEMO Python module
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    python3 -m venv {{ pulsar_nemo_venv }}
+  args:
+    executable: /bin/bash
+    creates: "{{ pulsar_nemo_venv }}/bin/activate"
+
+- name: Install Pulsar (pulsar-app, standalone) from pinned SHA
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    source {{ pulsar_nemo_venv }}/bin/activate
+    pip install --upgrade pip
+    pip install "git+https://github.com/galaxyproject/pulsar.git@{{ pulsar_nemo_version }}"
+  args:
+    executable: /bin/bash
+    creates: "{{ pulsar_nemo_venv }}/bin/pulsar-main"
+
+- name: Install pulsar-relay-client into the venv
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    source {{ pulsar_nemo_venv }}/bin/activate
+    pip install "pulsar-relay-client{{ pulsar_nemo_relay_client_version }}"
+  args:
+    executable: /bin/bash
+    creates: "{{ pulsar_nemo_venv }}/lib/python3.11/site-packages/pulsar_relay_client/__init__.py"
 
 - name: Deploy Pulsar app config
   template:
