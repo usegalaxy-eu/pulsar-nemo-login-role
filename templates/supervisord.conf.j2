@@ -1,0 +1,23 @@
+[unix_http_server]
+file={{ pulsar_nemo_home }}/supervisor.sock
+
+[supervisord]
+logfile={{ pulsar_nemo_home }}/supervisord.log
+pidfile={{ pulsar_nemo_home }}/supervisord.pid
+childlogdir={{ pulsar_nemo_home }}
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix://{{ pulsar_nemo_home }}/supervisor.sock
+
+[program:pulsar]
+command={{ pulsar_nemo_home }}/run_pulsar.sh
+directory={{ pulsar_nemo_home }}
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs=30
+stdout_logfile={{ pulsar_nemo_home }}/pulsar-supervisor.log
+stderr_logfile={{ pulsar_nemo_home }}/pulsar-supervisor-err.log

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Launcher invoked by supervisord. Does NOT loop — supervisord handles restarts.
+# Loads the NEMO Python module, activates the venv, sets relay flags, then execs Pulsar.
+source /etc/profile.d/modules.sh 2>/dev/null || source /usr/share/lmod/lmod/init/bash 2>/dev/null
+module load {{ pulsar_nemo_python_module }}
+cd {{ pulsar_nemo_home }}
+source .venv/bin/activate
+{% if pulsar_nemo_relay_allow_insecure %}
+export PULSAR_RELAY_ALLOW_INSECURE=1
+{% endif %}
+exec pulsar-main --app_conf_path config/app.yml

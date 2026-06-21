@@ -25,3 +25,8 @@ pulsar_nemo_relay_password: "CHANGE_ME"
 
 # Slurm submission
 pulsar_nemo_log_level: "INFO"
+
+# Process management: supervisord (replaces the bash while-loop wrapper).
+# supervisord runs in user space (no root/systemd needed on the login node)
+# and is launched on boot via an @reboot cron entry.
+pulsar_nemo_use_supervisord: true

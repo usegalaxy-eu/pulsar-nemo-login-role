@@ -47,7 +47,58 @@
     dest: "{{ pulsar_nemo_home }}/config/job_metrics_conf.xml"
     mode: "0644"
 
-- name: Deploy start wrapper
+- name: Install supervisor into the venv
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    source {{ pulsar_nemo_venv }}/bin/activate
+    pip install supervisor
+  args:
+    executable: /bin/bash
+    creates: "{{ pulsar_nemo_venv }}/bin/supervisord"
+  when: pulsar_nemo_use_supervisord
+
+- name: Deploy supervisord launcher script
+  template:
+    src: run_pulsar.sh.j2
+    dest: "{{ pulsar_nemo_home }}/run_pulsar.sh"
+    mode: "0755"
+  when: pulsar_nemo_use_supervisord
+
+- name: Deploy supervisord config
+  template:
+    src: supervisord.conf.j2
+    dest: "{{ pulsar_nemo_home }}/supervisord.conf"
+    mode: "0644"
+  when: pulsar_nemo_use_supervisord
+
+- name: Ensure supervisord starts on boot via @reboot cron
+  cron:
+    name: "start pulsar supervisord"
+    special_time: reboot
+    job: "cd {{ pulsar_nemo_home }} && {{ pulsar_nemo_venv }}/bin/supervisord -c {{ pulsar_nemo_home }}/supervisord.conf"
+  when: pulsar_nemo_use_supervisord
+
+- name: Check if supervisord is already running
+  shell: "{{ pulsar_nemo_venv }}/bin/supervisorctl -c {{ pulsar_nemo_home }}/supervisord.conf status"
+  args:
+    executable: /bin/bash
+  register: _supervisor_status
+  failed_when: false
+  changed_when: false
+  when: pulsar_nemo_use_supervisord
+
+- name: Start supervisord if not already running
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    cd {{ pulsar_nemo_home }}
+    {{ pulsar_nemo_venv }}/bin/supervisord -c {{ pulsar_nemo_home }}/supervisord.conf
+  args:
+    executable: /bin/bash
+  when:
+    - pulsar_nemo_use_supervisord
+    - _supervisor_status.rc != 0
+
+- name: Deploy legacy start wrapper (fallback, not used when supervisord is active)
   template:
     src: start_pulsar.sh.j2
     dest: "{{ pulsar_nemo_home }}/start_pulsar.sh"
