@@ -6,10 +6,7 @@ pulsar_nemo_venv: "{{ pulsar_nemo_home }}/.venv"
 # Python module to load on NEMO (relay client needs >= 3.10; the venv is built with this)
 pulsar_nemo_python_module: "lang/python/3.11.5-gcccore-13.2.0"
 
-# Pulsar version: pinned master SHA that includes the pulsar-relay-client migration
-# (commit 9ca39bb). Installed as pulsar-app (standalone, full galaxy-* deps), do NOT
-# set PULSAR_GALAXY_LIB, the login node runs Pulsar standalone.
-pulsar_nemo_version: "cc29156f59d3d2259ecc5eac5d5441ca16f080e0"
+pulsar_nemo_version: "0.15.15"
 
 # Relay client (separate package since the migration; needs >= 0.2.1 for relay 0.2.x)
 pulsar_nemo_relay_client_version: ">=0.2.1"

@@ -16,12 +16,12 @@
     executable: /bin/bash
     creates: "{{ pulsar_nemo_venv }}/bin/activate"
 
-- name: Install Pulsar (pulsar-app, standalone) from pinned SHA
+- name: Install Pulsar (pulsar-app, standalone) from PyPI
   shell: |
     module load {{ pulsar_nemo_python_module }}
     source {{ pulsar_nemo_venv }}/bin/activate
     pip install --upgrade pip
-    pip install "git+https://github.com/galaxyproject/pulsar.git@{{ pulsar_nemo_version }}"
+    pip install "pulsar-app=={{ pulsar_nemo_version }}"
   args:
     executable: /bin/bash
     creates: "{{ pulsar_nemo_venv }}/bin/pulsar-main"
