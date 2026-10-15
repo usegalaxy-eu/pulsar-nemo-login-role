@@ -1,0 +1,6 @@
+---
+- name: restart pulsar
+  shell: "{{ pulsar_nemo_venv }}/bin/supervisorctl -c {{ pulsar_nemo_home }}/supervisord.conf restart pulsar"
+  args:
+    executable: /bin/bash
+  when: pulsar_nemo_use_supervisord and pulsar_nemo_start

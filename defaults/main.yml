@@ -3,27 +3,32 @@
 pulsar_nemo_home: "{{ ansible_env.HOME }}/pulsar"
 pulsar_nemo_venv: "{{ pulsar_nemo_home }}/.venv"
 
+# Job staging. On NEMO use a workspace, home has a 100 GB quota
+pulsar_nemo_staging_directory: "{{ pulsar_nemo_home }}/jobs_directory"
+
+# Workspace name to keep alive with a monthly ws_extend from cron ("" = none)
+pulsar_nemo_workspace: ""
+
 # Python module to load on NEMO (relay client needs >= 3.10; the venv is built with this)
 pulsar_nemo_python_module: "lang/python/3.11.5-gcccore-13.2.0"
 
 pulsar_nemo_version: "0.15.15"
 
-# Relay client (separate package since the migration; needs >= 0.2.1 for relay 0.2.x)
-pulsar_nemo_relay_client_version: ">=0.2.1"
+# Relay client, pinned to match the relay version in use
+pulsar_nemo_relay_client_version: "==0.2.1"
 
-# Allow plaintext http:// to the relay. The new client refuses non-localhost http://
-# unless this is set. Set to false once the relay is behind https://.
+# Allow plaintext http:// to the relay. Set to false once the relay is behind https://.
 pulsar_nemo_relay_allow_insecure: true
 
-# Relay connection (override; secrets via vault)
+# Relay connection (override; secrets via vault). Use a non-admin relay account.
 pulsar_nemo_relay_url: "http://CHANGE_ME:9000/"
-pulsar_nemo_relay_username: "admin"
+pulsar_nemo_relay_username: "CHANGE_ME"
 pulsar_nemo_relay_password: "CHANGE_ME"
 
-# Slurm submission
 pulsar_nemo_log_level: "INFO"
 
-# Process management: supervisord (replaces the bash while-loop wrapper).
-# supervisord runs in user space (no root/systemd needed on the login node)
-# and is launched on boot via an @reboot cron entry.
+# Process management: supervisord in user space, started on boot via @reboot cron
 pulsar_nemo_use_supervisord: true
+
+# false = install and configure only, don't start (e.g. relay not reachable yet)
+pulsar_nemo_start: true
