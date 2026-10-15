@@ -4,7 +4,7 @@ job_metrics_config_file: job_metrics_conf.xml
 message_queue_url: {{ pulsar_nemo_relay_url }}
 message_queue_username: {{ pulsar_nemo_relay_username }}
 message_queue_password: {{ pulsar_nemo_relay_password }}
-staging_directory: {{ pulsar_nemo_home }}/jobs_directory
+staging_directory: {{ pulsar_nemo_staging_directory }}
 
 container_resolvers:
   - type: apptainer

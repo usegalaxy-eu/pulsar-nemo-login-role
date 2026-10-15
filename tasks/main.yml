@@ -7,6 +7,7 @@
   loop:
     - "{{ pulsar_nemo_home }}"
     - "{{ pulsar_nemo_home }}/config"
+    - "{{ pulsar_nemo_staging_directory }}"
 
 - name: Create the Pulsar venv with the NEMO Python module
   shell: |
@@ -16,30 +17,25 @@
     executable: /bin/bash
     creates: "{{ pulsar_nemo_venv }}/bin/activate"
 
-- name: Install Pulsar (pulsar-app, standalone) from PyPI
+# No `creates:` here, so a version bump in defaults actually upgrades
+- name: Install Pulsar (pulsar-app) and the relay client
   shell: |
     module load {{ pulsar_nemo_python_module }}
     source {{ pulsar_nemo_venv }}/bin/activate
-    pip install --upgrade pip
-    pip install "pulsar-app=={{ pulsar_nemo_version }}"
+    pip install -q --upgrade pip
+    pip install "pulsar-app=={{ pulsar_nemo_version }}" "pulsar-relay-client{{ pulsar_nemo_relay_client_version }}"
   args:
     executable: /bin/bash
-    creates: "{{ pulsar_nemo_venv }}/bin/pulsar-main"
-
-- name: Install pulsar-relay-client into the venv
-  shell: |
-    module load {{ pulsar_nemo_python_module }}
-    source {{ pulsar_nemo_venv }}/bin/activate
-    pip install "pulsar-relay-client{{ pulsar_nemo_relay_client_version }}"
-  args:
-    executable: /bin/bash
-    creates: "{{ pulsar_nemo_venv }}/lib/python3.11/site-packages/pulsar_relay_client/__init__.py"
+  register: _pulsar_pip
+  changed_when: "'Successfully installed' in _pulsar_pip.stdout"
+  notify: restart pulsar
 
 - name: Deploy Pulsar app config
   template:
     src: app.yml.j2
     dest: "{{ pulsar_nemo_home }}/config/app.yml"
     mode: "0600"
+  notify: restart pulsar
 
 - name: Deploy job metrics config
   copy:
@@ -63,6 +59,7 @@
     dest: "{{ pulsar_nemo_home }}/run_pulsar.sh"
     mode: "0755"
   when: pulsar_nemo_use_supervisord
+  notify: restart pulsar
 
 - name: Deploy supervisord config
   template:
@@ -71,12 +68,28 @@
     mode: "0644"
   when: pulsar_nemo_use_supervisord
 
-- name: Ensure supervisord starts on boot via @reboot cron
+- name: Start supervisord on boot via @reboot cron
   cron:
     name: "start pulsar supervisord"
     special_time: reboot
     job: "cd {{ pulsar_nemo_home }} && {{ pulsar_nemo_venv }}/bin/supervisord -c {{ pulsar_nemo_home }}/supervisord.conf"
-  when: pulsar_nemo_use_supervisord
+    state: "{{ 'present' if (pulsar_nemo_use_supervisord and pulsar_nemo_start) else 'absent' }}"
+
+# cron PATH is only /usr/bin:/bin; ws_extend lives in /usr/local/bin on NEMO and calls ws_allocate by name
+- name: Find ws_extend
+  shell: command -v ws_extend
+  register: _ws_extend
+  changed_when: false
+  when: pulsar_nemo_workspace | length > 0
+
+- name: Keep the workspace alive (monthly ws_extend, logged)
+  cron:
+    name: "extend pulsar workspace"
+    minute: "17"
+    hour: "3"
+    day: "1"
+    job: "PATH={{ _ws_extend.stdout | dirname }}:/usr/bin:/bin {{ _ws_extend.stdout }} {{ pulsar_nemo_workspace }} 100 >> {{ pulsar_nemo_home }}/ws_extend.log 2>&1"
+  when: pulsar_nemo_workspace | length > 0
 
 - name: Check if supervisord is already running
   shell: "{{ pulsar_nemo_venv }}/bin/supervisorctl -c {{ pulsar_nemo_home }}/supervisord.conf status"
@@ -85,7 +98,7 @@
   register: _supervisor_status
   failed_when: false
   changed_when: false
-  when: pulsar_nemo_use_supervisord
+  when: pulsar_nemo_use_supervisord and pulsar_nemo_start
 
 - name: Start supervisord if not already running
   shell: |
@@ -96,6 +109,7 @@
     executable: /bin/bash
   when:
     - pulsar_nemo_use_supervisord
+    - pulsar_nemo_start
     - _supervisor_status.rc != 0
 
 - name: Deploy legacy start wrapper (fallback, not used when supervisord is active)
