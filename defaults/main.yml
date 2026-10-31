@@ -27,6 +27,10 @@ pulsar_nemo_relay_password: "CHANGE_ME"
 
 pulsar_nemo_log_level: "INFO"
 
+# Slurm settings for every job. queued_cli ignores Galaxy's per-job native spec, so these are fixed.
+# partition/time/ncpus map to -p/-t/-c, keys starting with "-" go to #SBATCH as they are
+pulsar_nemo_slurm_params: {}
+
 # Process management: supervisord in user space, started on boot via @reboot cron
 pulsar_nemo_use_supervisord: true
 

@@ -34,6 +34,7 @@ NEMO login nodes have no user-level systemd, so Pulsar runs under supervisord in
 | `pulsar_nemo_relay_password` | `CHANGE_ME` | **override** |
 | `pulsar_nemo_relay_allow_insecure` | `true` | `false` once the relay has https |
 | `pulsar_nemo_start` | `true` | `false` = install only, don't start |
+| `pulsar_nemo_slurm_params` | `{}` | fixed slurm settings for every job, e.g. `partition: milan`, `time: "4-0"`, `ncpus: 4`, `"--mem-per-cpu": 3800M`. queued_cli ignores galaxy's native spec |
 
 ## Example
 
