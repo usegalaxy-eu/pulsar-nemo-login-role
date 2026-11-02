@@ -30,6 +30,34 @@
   changed_when: "'Successfully installed' in _pulsar_pip.stdout"
   notify: restart pulsar
 
+- name: Build slurm-drmaa (for queued_drmaa)
+  shell: |
+    set -e
+    mkdir -p {{ ansible_env.HOME }}/drmaa-build && cd {{ ansible_env.HOME }}/drmaa-build
+    V={{ pulsar_nemo_slurm_drmaa_version }}
+    curl -sSLf -o slurm-drmaa-$V.tar.gz https://github.com/natefoo/slurm-drmaa/releases/download/$V/slurm-drmaa-$V.tar.gz
+    rm -rf slurm-drmaa-$V && tar xzf slurm-drmaa-$V.tar.gz && cd slurm-drmaa-$V
+    ./configure --prefix={{ pulsar_nemo_slurm_drmaa_prefix }} --with-slurm-inc=/usr/include --with-slurm-lib=/usr/lib64 > configure.log 2>&1
+    make -j4 > make.log 2>&1 && make install > install.log 2>&1
+    touch {{ pulsar_nemo_slurm_drmaa_prefix }}/.built-$V
+  args:
+    executable: /bin/bash
+    creates: "{{ pulsar_nemo_slurm_drmaa_prefix }}/.built-{{ pulsar_nemo_slurm_drmaa_version }}"
+  when: pulsar_nemo_manager_type == 'queued_drmaa'
+  notify: restart pulsar
+
+- name: Install python drmaa (for queued_drmaa)
+  shell: |
+    module load {{ pulsar_nemo_python_module }}
+    source {{ pulsar_nemo_venv }}/bin/activate
+    pip install drmaa
+  args:
+    executable: /bin/bash
+  register: _drmaa_pip
+  changed_when: "'Successfully installed' in _drmaa_pip.stdout"
+  when: pulsar_nemo_manager_type == 'queued_drmaa'
+  notify: restart pulsar
+
 - name: Deploy Pulsar app config
   template:
     src: app.yml.j2

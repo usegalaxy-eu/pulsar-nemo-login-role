@@ -11,8 +11,10 @@ container_resolvers:
 
 managers:
   _default_:
-    type: queued_cli
+    type: {{ pulsar_nemo_manager_type }}
+{% if pulsar_nemo_manager_type == 'queued_cli' %}
     job_plugin: Slurm
 {% for key, value in pulsar_nemo_slurm_params.items() %}
     job_{{ key }}: "{{ value }}"
 {% endfor %}
+{% endif %}

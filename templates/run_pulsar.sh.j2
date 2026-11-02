@@ -8,4 +8,7 @@ source .venv/bin/activate
 {% if pulsar_nemo_relay_allow_insecure %}
 export PULSAR_RELAY_ALLOW_INSECURE=1
 {% endif %}
+{% if pulsar_nemo_manager_type == 'queued_drmaa' %}
+export DRMAA_LIBRARY_PATH={{ pulsar_nemo_slurm_drmaa_prefix }}/lib/libdrmaa.so
+{% endif %}
 exec pulsar-main --app_conf_path config/app.yml

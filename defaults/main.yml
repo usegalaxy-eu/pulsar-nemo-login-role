@@ -31,6 +31,12 @@ pulsar_nemo_log_level: "INFO"
 # partition/time/ncpus map to -p/-t/-c, keys starting with "-" go to #SBATCH as they are
 pulsar_nemo_slurm_params: {}
 
+# queued_cli: fixed sizes from pulsar_nemo_slurm_params.
+# queued_drmaa: per-job sizes from Galaxy's native spec, via slurm-drmaa built in user space
+pulsar_nemo_manager_type: queued_cli
+pulsar_nemo_slurm_drmaa_version: "1.1.6"
+pulsar_nemo_slurm_drmaa_prefix: "{{ pulsar_nemo_home }}/slurm-drmaa"
+
 # Process management: supervisord in user space, started on boot via @reboot cron
 pulsar_nemo_use_supervisord: true
 
